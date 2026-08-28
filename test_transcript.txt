@@ -1,0 +1,6 @@
+Hello everyone, welcome to the engineering retrospective.
+Today we will discuss the bottlenecks we faced in the previous sprint.
+The main issue was the database connection pooling, which caused timeouts under high load.
+We mitigated this by increasing the pool size and tuning the max overflow settings.
+Moving forward, we will implement closer monitoring on our RDS instances.
+Thanks for a great sprint!

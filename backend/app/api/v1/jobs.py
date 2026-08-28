@@ -47,3 +47,15 @@ async def get_job_status(job_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
         
     return job
+
+from app.models.summary import Summary
+
+@router.get("/{job_id}/summary")
+async def get_job_summary(job_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Summary).where(Summary.job_id == job_id))
+    summary = result.scalar_one_or_none()
+    
+    if not summary:
+        raise HTTPException(status_code=404, detail="Summary not found")
+        
+    return summary

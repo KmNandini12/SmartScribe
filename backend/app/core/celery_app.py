@@ -4,7 +4,8 @@ from app.core.config import settings
 celery_app = Celery(
     "worker",
     broker=settings.REDIS_URL or f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0",
-    backend=settings.REDIS_URL or f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0"
+    backend=settings.REDIS_URL or f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/0",
+    include=["app.worker.tasks"]
 )
 
 celery_app.conf.update(
