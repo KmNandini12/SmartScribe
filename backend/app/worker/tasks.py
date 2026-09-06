@@ -88,6 +88,9 @@ async def process_summary_async(job_id: str):
             await session.commit()
             raise e
 
-@celery_app.task(bind=True, name="summarize_transcript")
+@celery_app.task(bind=True, name="summarize_transcript", time_limit=300, soft_time_limit=240, max_retries=3)
 def summarize_transcript(self, job_id: str):
-    asyncio.run(process_summary_async(job_id))
+    try:
+        asyncio.run(process_summary_async(job_id))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=10)
