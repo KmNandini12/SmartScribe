@@ -21,8 +21,9 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-8 md:p-24 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <main className="min-h-screen bg-slate-50 p-8 md:p-24 font-sans text-slate-900">
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
+      <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">

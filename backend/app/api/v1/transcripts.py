@@ -46,12 +46,46 @@ async def upload_transcript(
 
     text = content.decode("utf-8")
     
-    # Simple parser for sentences
-    raw_sentences = re.split(r'(?<=[.!?]) +', text)
-    sentences = [
-        SentenceData(text=s.strip(), speaker="Unknown", timestamp="00:00:00").model_dump()
-        for s in raw_sentences if s.strip()
-    ]
+    # Advanced parser for identifying speakers
+    raw_lines = text.split('\n')
+    sentences = []
+    
+    for line in raw_lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Ignore purely systemic log lines like "--- 11:45 AM ---"
+        if line.startswith('---') and line.endswith('---'):
+            continue
+            
+        speaker = "Unknown"
+        timestamp = "00:00:00"
+        sentence_text = line
+        
+        # Match Campfire style: [     Doug A.:] text
+        campfire_match = re.match(r'^\[\s*([^\]]+?)\s*\]\s*(.*)', line)
+        if campfire_match:
+            speaker_raw = campfire_match.group(1).strip()
+            if speaker_raw.endswith(':'):
+                speaker = speaker_raw[:-1].strip()
+            elif re.match(r'^\d{1,2}:\d{2}\s*(AM|PM)?$', speaker_raw):
+                timestamp = speaker_raw
+                speaker = "System"
+            else:
+                speaker = speaker_raw
+            sentence_text = campfire_match.group(2).strip()
+        else:
+            # Match standard transcript: "Sarah: Let's do a quick sync"
+            standard_match = re.match(r'^([A-Za-z0-9\s_]+):\s*(.*)', line)
+            if standard_match:
+                speaker = standard_match.group(1).strip()
+                sentence_text = standard_match.group(2).strip()
+                
+        if sentence_text:
+            sentences.append(
+                SentenceData(text=sentence_text, speaker=speaker, timestamp=timestamp).model_dump()
+            )
     
     transcript_id = str(uuid.uuid4())
     transcript = Transcript(

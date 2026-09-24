@@ -76,6 +76,7 @@ export function SplitPaneInspector({ transcript, jobId }: { transcript: any, job
                   className="p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors bg-card"
                   onClick={() => handlePointClick(point.text)}
                 >
+                  <p className="text-xs font-bold text-primary mb-1 uppercase tracking-wide">{point.speaker || "Unknown"}</p>
                   <p className="text-sm font-medium">{point.text}</p>
                 </div>
               ))}

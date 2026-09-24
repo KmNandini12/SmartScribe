@@ -24,13 +24,21 @@ class MLModelSingleton:
             cls._instance = SentenceTransformer("all-MiniLM-L6-v2")
         return cls._instance
 
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from app.core.config import settings
+
 async def process_summary_async(job_id: str):
-    async with async_session_maker() as session:
+    db_url = settings.DATABASE_URL or f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    local_engine = create_async_engine(db_url, poolclass=None)
+    local_session_maker = async_sessionmaker(local_engine, class_=AsyncSession, expire_on_commit=False)
+    
+    async with local_session_maker() as session:
         # Fetch Job
         result = await session.execute(select(Job).where(Job.id == job_id))
         job = result.scalar_one_or_none()
         
         if not job:
+            await local_engine.dispose()
             return
             
         job.status = JobState.PROCESSING
@@ -87,6 +95,8 @@ async def process_summary_async(job_id: str):
             job.error_message = str(e)
             await session.commit()
             raise e
+        finally:
+            await local_engine.dispose()
 
 @celery_app.task(bind=True, name="summarize_transcript", time_limit=300, soft_time_limit=240, max_retries=3)
 def summarize_transcript(self, job_id: str):
